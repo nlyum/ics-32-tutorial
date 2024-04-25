@@ -22,6 +22,10 @@ def run_file_explorer():
 def create_file(input_list):
     print(input_list)
     location = input_list[0]
+    location_path = Path(location)
+    file_name = input_list[2]
+    file_path = location_path / file_name
+    file_path.mkdir()
 
 
 def del_file():
@@ -31,4 +35,5 @@ def read_file():
     pass
 
 if __name__ == "__main__":
+    print(Path.cwd())
     run_file_explorer()
