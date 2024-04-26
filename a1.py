@@ -17,6 +17,11 @@ def run_file_explorer():
     user_command = user_inputs[0]
     if user_command == 'C':
         create_file(user_inputs[1:])
+    elif user_command == 'D':
+        del_file(user_inputs[1])
+    elif user_command == 'R':
+        read_file(user_inputs[1])
+    
 
 
 def create_file(input_list):
@@ -34,12 +39,23 @@ def create_file(input_list):
 
         f = file_path.open("w")
         f.close
+        print("created your file")
 
 
-def del_file():
-    pass
+def del_file(input_path):
+    file_path = Path(input_path)
+    if file_path.suffix == ".dsu":
+        try:
+            file_path.unlink()
+            print(f"{input_path} DELETED")
+        except FileNotFoundError:
+            print("it's not there bozo")
+    else:
+        print("ERROR")
+        run_file_explorer()
 
-def read_file():
+
+def read_file(input_list):
     pass
 
 if __name__ == "__main__":
