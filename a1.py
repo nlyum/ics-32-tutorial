@@ -21,17 +21,19 @@ def run_file_explorer():
 
 def create_file(input_list):
     location = input_list[0]
-    print(f"File location: {location}")
+    # print(f"File location: {location}")
+    option = input_list[1]    
     file_name = input_list[2]
-    print(f"File name: {file_name}")
+    # print(f"File name: {file_name}")
 
-    location_path = Path(location)
-    location_path.mkdir(exist_ok = True)
-    
-    file_path = location_path / (file_name + ".dsu")
+    if option == "-n":
+        location_path = Path(location)
+        location_path.mkdir(exist_ok = True)
+        
+        file_path = location_path / (file_name + ".dsu")
 
-    f = file_path.open("w")
-    f.close
+        f = file_path.open("w")
+        f.close
 
 
 def del_file():
