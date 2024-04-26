@@ -20,12 +20,18 @@ def run_file_explorer():
 
 
 def create_file(input_list):
-    print(input_list)
     location = input_list[0]
-    location_path = Path(location)
+    print(f"File location: {location}")
     file_name = input_list[2]
-    file_path = location_path / file_name
-    file_path.mkdir()
+    print(f"File name: {file_name}")
+
+    location_path = Path(location)
+    location_path.mkdir(exist_ok = True)
+    
+    file_path = location_path / (file_name + ".dsu")
+
+    f = file_path.open("w")
+    f.close
 
 
 def del_file():
