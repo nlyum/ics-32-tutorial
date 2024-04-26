@@ -39,8 +39,6 @@ def create_file(input_list):
 
         f = file_path.open("w")
         f.close
-        print("created your file")
-
 
 def del_file(input_path):
     file_path = Path(input_path)
@@ -49,14 +47,29 @@ def del_file(input_path):
             file_path.unlink()
             print(f"{input_path} DELETED")
         except FileNotFoundError:
-            print("it's not there bozo")
+            print("ERROR")
     else:
         print("ERROR")
         run_file_explorer()
 
 
 def read_file(input_list):
-    pass
+    file_path = Path(input_list)
+    if file_path.suffix == ".dsu":
+        f = file_path.open("r")
+        if f.read(1):
+            f.close()
+            f = file_path.open("r")
+            for line in f.readlines():
+                print(line, end = '')
+            print()
+        else:
+            print("EMPTY")
+        f.close()
+    else:
+        print("ERROR")
+        run_file_explorer()
+    
 
 if __name__ == "__main__":
     print(Path.cwd())
