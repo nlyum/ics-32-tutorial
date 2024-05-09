@@ -48,6 +48,10 @@ def connect_to_server(host:str, port:int) -> socket.socket:
         # TODO: create a socket object and use it to connect to the
         # server specified by the host and port params. If created successfully, 
         # return the socket
+        # DONE!!
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host, port))
+        return client
          
     except:
         return None
@@ -69,6 +73,9 @@ def run():
                 # TODO: place a call to the add function in the bookmark_connection module.
                 # collect the desired URL from the user and pass it to the url parameter of the add
                 # function.
+                # DONE!!!...?
+                bmc.add(_conn, input(INPUT_ADD))
+
                 
             elif resp == '2':
                 print("Opening Bookmarks not supported in this version of PyBookmarker Online")

@@ -20,6 +20,8 @@ def store(_conn: bmc.Connection, bm: Bookmarker, url: str) -> str:
     '''
     try:
         # TODO: store the provided url in the pybookmark.txt file using the provided Bookmarker (bm parameter) object's _add_ function
+        # DONE!
+        bm.add(url)
         
         status = 1
     except ValueError:
@@ -41,7 +43,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as srv:
 
     # TODO: using the srv object, bind to the server
     # specified by the HOST and PORT variables and start listening.
-    
+    # DONE!
+    srv.bind((HOST, PORT))
+    srv.listen()
+
 
     print("server listening on port", PORT)
     while True:
