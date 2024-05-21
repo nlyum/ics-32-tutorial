@@ -13,9 +13,9 @@ def main():
     try:
         input_string = input(ui.WELCOME_ENTER_COMMAND)
         print()
-        input_string = input_string.replace('\\', '/')
-        user_inputs = split(input_string)
+        user_inputs = split_input(input_string)
         loaded_path = None
+        admin_bool = False
     except Exception as ex:
         print(f"ERROR: {ex}")
         main()
@@ -27,9 +27,9 @@ def main():
 
             if user_command == 'C':
                 if user_args == 3:
-                    loaded_path = create_file(user_inputs[1:])
+                    loaded_path = create_file(user_inputs[1:], admin_bool)
                 else:
-                    print(ui.ERROR_C_GUIDE)
+                    loaded_path = c_line()
             
             elif user_command == 'D':
                 if user_args == 1:
@@ -47,29 +47,30 @@ def main():
                 if user_args == 1:
                     loaded_path = open_file(user_inputs[1])
                 else:
-                    print(ui.ERROR_O_GUIDE)
+                    loaded_path = o_line()
             
             elif user_command == 'E':
-                if user_args > 1:
-                    if loaded_path:
+                if loaded_path:
+                    if user_args > 1:
                         edit_file(user_inputs[1:], loaded_path)
                     else:
-                        print(ui.ERROR_LOAD_FILE)
+                        e_line(loaded_path)
                 else:
-                    print(ui.ERROR_E_GUIDE)
+                    print(ui.ERROR_LOAD_FILE)
             
             elif user_command == 'P':
-                if user_args in (1, 2):
-                    if loaded_path:
+                if loaded_path:
+                    if user_args > 0:
                         print_data(user_inputs[1:], loaded_path)
                     else:
-                        print(ui.ERROR_LOAD_FILE)
+                        p_line(loaded_path)
                 else:
-                    print(ui.ERROR_P_GUIDE)
+                    print(ui.ERROR_LOAD_FILE)
                 
             
             elif user_command == 'admin':
                 enter_admin_mode()
+                admin_bool = True
             elif user_command == 'Q':
                 break
             else:
@@ -78,15 +79,93 @@ def main():
             print()
             if loaded_path:
                 print(f"Current profile path loaded: {loaded_path}")
+                input_string = input(ui.ENTER_A_COMMAND)
             else:
                 print(f"No profile currently loaded")
-            
-            input_string = input(ui.ENTER_A_COMMAND)
+                input_string = input(ui.WELCOME_ENTER_COMMAND)
+
             print()
             input_string = input_string.replace('\\', '/')
             user_inputs = split(input_string)
         except Exception as ex:
             print(f"ERROR: {ex}")
+    
+def split_input(input_string):
+    input_string = input_string.replace('\\', '/')
+    return split(input_string)
+
+def organize_elem(input_string):
+    input_string = input_string.replace('\\', '/')
+    return split(input_string)[0]
+
+def c_line():
+    c_inputs = ['', '-n', '']
+    c_inputs[0] = organize_elem(input(ui.CLINE_GET_PATH))
+    if c_inputs[0] == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    c_inputs[2] = organize_elem(input(ui.CLINE_GET_FILENAME))
+    if c_inputs[2] == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    return create_file(c_inputs, False)
+
+def o_line():
+    o_input = input(ui.OLINE_GET_PATH)
+    if o_input == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    return open_file(o_input)
+
+def e_line(path):
+    e_inputs = []
+    e_inputs.append(input(ui.ELINE_GET_OPTION))
+    while True:
+        if e_inputs[0] != "-h":
+            break
+        else:
+            ui.list_e_options()
+            e_inputs[0] = input(ui.ELINE_GET_OPTION)
+    
+    if e_inputs[0] == "-usr":
+        e_inputs.append(input(ui.ELINE_GET_USR))
+    elif e_inputs[0] == "-pwd":
+        e_inputs.append(input(ui.ELINE_GET_PWD))
+    elif e_inputs[0] == "-bio":
+        e_inputs.append(input(ui.ELINE_GET_BIO))
+    elif e_inputs[0] == "-addpost":
+        e_inputs.append(input(ui.ELINE_GET_ADDPOST))
+    elif e_inputs[0] == "-delpost":
+        e_inputs.append(input(ui.ELINE_GET_DELPOST))
+    elif e_inputs[0] == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    
+    if len(e_inputs) > 1:
+        if e_inputs[1] == "Q":
+            print(ui.Q_RECEIVED)
+            return
+
+    edit_file(e_inputs, path)
+
+
+def p_line(path):
+    p_inputs = []
+    p_inputs.append(input(ui.PLINE_GET_OPTION))
+    while True:
+        if p_inputs[0] != "-h":
+            break
+        else:
+            ui.list_p_options()
+            p_inputs[0] = input(ui.PLINE_GET_OPTION)
+    
+    if p_inputs[0] == "-post":
+        p_inputs.append(input(ui.PLINE_GET_POST_ID))
+    elif p_inputs[0] == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    
+    print_data(p_inputs, path)
     
 
 def enter_admin_mode():
@@ -94,6 +173,7 @@ def enter_admin_mode():
     ui.ENTER_USERNAME = ""
     ui.ENTER_BIO = ""
     ui.ENTER_PASSWORD = ""
+
 
 def create_file(input_list, admin_bool):
     try:
@@ -112,8 +192,17 @@ def create_file(input_list, admin_bool):
 
             if not admin_bool:
                 username = input(ui.ENTER_USERNAME)
+                if username == "Q":
+                    print(ui.Q_RECEIVED)
+                    return
                 password = input(ui.ENTER_PASSWORD)
+                if password == "Q":
+                    print(ui.Q_RECEIVED)
+                    return
                 bio = input(ui.ENTER_BIO)
+                if bio == "Q":
+                    print(ui.Q_RECEIVED)
+                    return
             new_profile = Profile.Profile(file_name, username, password)
             new_profile.bio = bio
             f = file_path.open("w")
@@ -122,10 +211,14 @@ def create_file(input_list, admin_bool):
 
             print(file_path)
             return file_path
+        elif option == "Q":
+            print(ui.Q_RECEIVED)
+            return
         else:
             print(f"ERROR: option \"{option}\" not recognized, use \"-n\" to create a file")
     except Exception as ex:
         print(f"ERROR: {ex}")
+
 
 def del_file(input_path):
     try:
@@ -159,6 +252,7 @@ def read_file(input_path):
     except Exception as ex:
         print(f"ERROR: {ex}")
 
+
 def open_file(input_path):
     try:
         file_path = Path(input_path)
@@ -172,12 +266,13 @@ def open_file(input_path):
     except Exception as ex:
         print(f"ERROR: {ex}")
 
+
 def edit_file(input_list, input_path):
     try:
         profile_to_edit = Profile.Profile()
         profile_to_edit.load_profile(input_path)
         if len(input_list) % 2 != 0:
-            print(f"ERROR: odd number of edit arguments")
+            print(f"ERROR: invalid amount of edit arguments")
             return
         command_list = []
         for i in range(len(input_list) // 2):
@@ -185,7 +280,7 @@ def edit_file(input_list, input_path):
         
         for command_pair in command_list:
             command = command_pair[0]
-            arg = command_pair[1]
+            arg = command_pair[1]   
             if command == "-usr":
                 profile_to_edit.username = arg
                 print(f"Username changed to: {arg}")
@@ -213,50 +308,60 @@ def edit_file(input_list, input_path):
     except Exception as ex:
         print(f"ERROR: {ex}")
 
+
 def print_data(input_list, input_path):
     try:
         profile_to_scan = Profile.Profile()
         profile_to_scan.load_profile(input_path)
-        command = input_list[0]
         
-        if command == "-usr":
-            print(ui.TITLE_USERNAME)
-            print(profile_to_scan.username)
-        elif command == "-pwd":
-            print(ui.TITLE_PASSWORD)
-            print(profile_to_scan.password)
-        elif command == "-bio":
-            print(ui.TITLE_BIO)
-            print(profile_to_scan.bio)
-        elif command == "-posts":
-            print(ui.TITLE_POSTS)
-            profile_posts = profile_to_scan.get_posts()
-            for i in range(len(profile_posts)):
-                print(f"{i}: {profile_posts[i]["entry"]}")
-        elif command == "-post":
-            try:
-                if len(input_list) > 1:
-                    print(ui.TITLE_POST)
-                    post_id = int(input_list[1])
-                    print(profile_to_scan.get_posts()[post_id]["entry"])
-                else:
-                    print(ui.ERROR_P_POSTID_GUIDE)
-            except:
-                print(f"ERROR: post with ID {input_list[1]} not found")
-        elif command == "-all":
-            print(ui.TITLE_USERNAME, profile_to_scan.username)
-            print(ui.TITLE_PASSWORD, profile_to_scan.password)
-            print(ui.TITLE_BIO, profile_to_scan.bio)
-            print(ui.TITLE_POSTS)
-            profile_posts = profile_to_scan.get_posts()
-            for i in range(len(profile_posts)):
-                print(f"{i}: {profile_posts[i]["entry"]}")
-        else:
-            print(f"ERROR: Command {command} not recognized, stopping prints")
+        i = 0
+        while i < len(input_list):
+            command = input_list[i]
+            if command == "-usr":
+                print(ui.TITLE_USERNAME)
+                print(profile_to_scan.username)
+            elif command == "-pwd":
+                print(ui.TITLE_PASSWORD)
+                print(profile_to_scan.password)
+            elif command == "-bio":
+                print(ui.TITLE_BIO)
+                print(profile_to_scan.bio)
+            elif command == "-posts":
+                print(ui.TITLE_POSTS)
+                profile_posts = profile_to_scan.get_posts()
+                for i in range(len(profile_posts)):
+                    print(f"{i}: {profile_posts[i]["entry"]}")
+            elif command == "-post":
+                try:
+                    if len(input_list) > 1:
+                        print(f"Post with ID {input_list[i + 1]}")
+                        post_id = int(input_list[i + 1])
+                        print(profile_to_scan.get_posts()[post_id]["entry"])
+                        i += 1
+                    else:
+                        print(ui.ERROR_P_POSTID_GUIDE, " - stopping prints")
+                        break
+                except:
+                    print(f"ERROR: post with ID {input_list[1]} not found")
+            elif command == "-all":
+                print(ui.TITLE_USERNAME, profile_to_scan.username)
+                print(ui.TITLE_PASSWORD, profile_to_scan.password)
+                print(ui.TITLE_BIO, profile_to_scan.bio)
+                print(ui.TITLE_POSTS)
+                profile_posts = profile_to_scan.get_posts()
+                for i in range(len(profile_posts)):
+                    print(f"{i}: {profile_posts[i]["entry"]}")
+            else:
+                print(f"ERROR: Command {command} not recognized - stopping prints")
+                break
+            i += 1
+        
+        
 
         profile_to_scan.save_profile(input_path)
     except Exception as ex:
         print(f"ERROR: {ex}")
+
 
 if __name__ == "__main__":
     main()
