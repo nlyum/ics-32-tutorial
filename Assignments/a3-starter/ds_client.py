@@ -6,6 +6,8 @@
 # EMAIL: nlyum@uci.edu
 # STUDENT ID: 63833693
 
+import socket
+
 def send(server:str, port:int, username:str, password:str, message:str, bio:str=None):
   '''
   The send function joins a ds server and sends a message, bio, or both
@@ -18,4 +20,23 @@ def send(server:str, port:int, username:str, password:str, message:str, bio:str=
   :param bio: Optional, a bio for the user.
   '''
   #TODO: return either True or False depending on results of required operation
-  return 
+  try:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+      client.connect((server, port))
+      
+      send = client.makefile("w")
+      recv = client.makefile("r")
+
+      print(f"client connected to {server} on port {port}")
+      json_msg = '{"join": {"username": ' + username + ', "password": ' + password + ', "token": ""}}'
+      send.write(json_msg + "\r\n")
+      send.flush()
+
+      srv_msg = recv.readline()[:-1]
+      print(f"response from server: {srv_msg}")
+        
+  except Exception as ex:
+    print(f"Error: {ex}")
+    return False
+  else:
+    return True

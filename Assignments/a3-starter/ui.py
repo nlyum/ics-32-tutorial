@@ -4,8 +4,26 @@
 
 # ui.py
 
+ENTER_A_COMMAND = "Please enter a command (type \"H\" for a list of commands): "
+
+ENTER_ADDRESS = "Enter the IP address: "
+ENTER_PORT = "Enter the port: "
+
+ENTER_USERNAME = "Okay, enter your username: "
+ENTER_PASSWORD = "Enter your password: "
+
+ENTER_POST_MESSAGE = "Enter the post you'd like to make: "
+ENTER_BIO = "Enter a bio: "
+
+
+SUCCESS_JOIN = "Username and password accepted!"
+
+MUST_JOIN = "Sorry, please join a server first!"
+MUST_PORT_NUM = "The port number must be an integer, please try again."
+
+UNKNOWN_COMMAND = "Sorry, command not recognized."
+
 WELCOME_ENTER_COMMAND = "Welcome! Create a file with the 'C' command or open a DSU file with the 'O' command: "
-ENTER_A_COMMAND = "Please enter a command (use the 'E' command to edit a file, 'P' to print information, or 'Q' to quit): "
 ENTER_USERNAME = "Please enter your username: "
 ENTER_PASSWORD = "Please enter your password: "
 ENTER_BIO = "Please enter your bio: "
@@ -28,6 +46,11 @@ TITLE_POSTS = "Posts:"
 CLINE_GET_PATH = "Great! Enter the directory you'd like to create the file in: "
 CLINE_GET_FILENAME = "Okay, enter the name of the file you'd like to create: "
 
+DLINE_GET_PATH = "Okay, enter the file path of the file you'd like to delete: "
+
+RLINE_GET_PATH = "Okay, enter the file path of the file you'd like to read: "
+
+
 OLINE_GET_PATH = "Great! Enter the path of the file you'd like to load: "
 
 ELINE_GET_OPTION = "Okay, enter an option to edit, or enter \"-h\" to get a list of options: "
@@ -42,6 +65,18 @@ Q_RECEIVED = "\"Q\" command received, quitting action..."
 PLINE_GET_OPTION = "Okay, enter an option to print, or enter \"-h\" to get a list of options: "
 PLINE_GET_POST_ID = "Okay, enter the ID of the post you'd like to view: "
 
+def list_commands():
+    print("J: Join a server")
+    print("M: Make a post")
+    print("B: Make a bio")
+    print("C: Create a file")
+    print("O: Open a file")
+    print("D: Delete a file")
+    print("R: Read a file")
+    print("E: Edit a file")
+    print("P: Print information from a file")
+    print("H: Get a list of commands")
+    print("Q: Quit program")
 
 
 def list_e_options():

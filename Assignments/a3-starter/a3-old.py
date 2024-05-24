@@ -12,98 +12,87 @@ from pathlib import Path
 from shlex import split
 import Profile
 
+
 def main():
-    main_loop()
-
-def _get_port(): # get in a loop until the user inputs a port number
     try:
-        print(ui.ENTER_PORT)
-        port = int(input())
-        return port
-    except ValueError:
-        print(ui.MUST_PORT_NUM)
-        return _get_port()
+        input_string = input(ui.WELCOME_ENTER_COMMAND)
+        print()
+        user_inputs = split_input(input_string)
+        loaded_path = None
+        admin_bool = False
+    except Exception as ex:
+        print(f"ERROR: {ex}")
+        main()
 
-def main_loop(username = '', password = '', address = '', port = 0, loaded_path = ''):
     while True:
-        if loaded_path:
-            print(f"Current profile path loaded: {loaded_path}")
-        else:
-            print(f"No profile currently loaded")
+        try:
+            user_command = user_inputs[0]
+            user_args = len(user_inputs) - 1
 
-        if address == '':
-            print(f"No server currently joined")
-        else:
-            print(f"Joined server {address} at port {port}")
-
-        print()
-        print(ui.ENTER_A_COMMAND)
-        user_command = input()
-        
-        if loaded_path:
-            loaded_profile = Profile.Profile()
-            loaded_profile.load_profile(loaded_path)
-            username = loaded_profile.username
-            password = loaded_profile.password
-            bio = loaded_profile.bio
-
-        if user_command == "J": # user tries to join server
-            print(ui.ENTER_ADDRESS)
-            address = input()
-            port = _get_port()
+            if user_command == 'C':
+                if user_args == 3:
+                    loaded_path = create_file(user_inputs[1:], admin_bool)
+                else:
+                    loaded_path = c_line()
             
-        elif user_command == "M": # user tries to make a post
-            if loaded_path:
-                # send a message
-                m_line(address, port, username, password)
-            else:
-                print(ui.ERROR_LOAD_FILE) # if the user hasn't opened a file yet, do that
+            elif user_command == 'D':
+                if user_args == 1:
+                    del_file(user_inputs[1])
+                else:
+                    print(ui.ERROR_D_GUIDE)
+            
+            elif user_command == 'R':
+                if user_args == 1:
+                    read_file(user_inputs[1])
+                else:
+                    print(ui.ERROR_R_GUIDE)
+            
+            elif user_command == 'O':
+                if user_args == 1:
+                    loaded_path = open_file(user_inputs[1])
+                else:
+                    loaded_path = o_line()
+            
+            elif user_command == 'E':
+                if loaded_path:
+                    if user_args > 1:
+                        edit_file(user_inputs[1:], loaded_path)
+                    else:
+                        e_line(loaded_path)
+                else:
+                    print(ui.ERROR_LOAD_FILE)
+            
+            elif user_command == 'P':
+                if loaded_path:
+                    if user_args > 0:
+                        print_data(user_inputs[1:], loaded_path)
+                    else:
+                        p_line(loaded_path)
+                else:
+                    print(ui.ERROR_LOAD_FILE)
                 
-
-        elif user_command == "B": # user tries to add/change a bio
-            if loaded_path:
-                # make a bio
-                b_line(address, port, username, password)
-            else:
-                print(ui.ERROR_LOAD_FILE) # if the user hasn't opened a file yet, do that
-        
-        elif user_command == 'C':
-            loaded_path = c_line()
-        
-        elif user_command == 'D':
-            d_line()
-        
-        elif user_command == 'R':
-            r_line()
-
-        elif user_command == 'O':
-            loaded_path = o_line()
-        
-        elif user_command == 'E':
-            if loaded_path:
-                e_line(loaded_path)
-            else:
-                print(ui.ERROR_LOAD_FILE)
-        
-        elif user_command == 'P':
-            if loaded_path:
-                p_line(loaded_path)
-            else:
-                print(ui.ERROR_LOAD_FILE)
-
-        elif user_command == 'H':
-            ui.list_commands()
-        
-        elif user_command == 'Q':
-            break
-        else:
-            print(ui.ERROR_UNKNOWN_COMMAND)
             
-        print()
-        
+            elif user_command == 'admin':
+                enter_admin_mode()
+                admin_bool = True
+            elif user_command == 'Q':
+                break
+            else:
+                print(ui.ERROR_UNKNOWN_COMMAND)
+            
+            print()
+            if loaded_path:
+                print(f"Current profile path loaded: {loaded_path}")
+                input_string = input(ui.ENTER_A_COMMAND)
+            else:
+                print(f"No profile currently loaded")
+                input_string = input(ui.WELCOME_ENTER_COMMAND)
 
-
-
+            print()
+            input_string = input_string.replace('\\', '/')
+            user_inputs = split(input_string)
+        except Exception as ex:
+            print(f"ERROR: {ex}")
     
 def split_input(input_string):
     input_string = input_string.replace('\\', '/')
@@ -124,41 +113,6 @@ def c_line():
         print(ui.Q_RECEIVED)
         return
     return create_file(c_inputs, False)
-
-def b_line(address, port, username, password):
-    print(ui.ENTER_BIO)
-    bio = input()
-    ds_client.send(address, port, username, password, '', bio)
-
-def m_line(address, port, username, password):
-    print(ui.ENTER_POST_MESSAGE)
-    post_message = input()
-    ds_client.send(address, port, username, password, post_message)
-
-def d_line():
-    delete_path = ''
-    while True:
-        print(ui.DLINE_GET_PATH)
-        delete_path = input()
-        if delete_path:
-            if delete_path == "Q":
-                return
-            else:
-                break
-    del_file(delete_path)
-
-
-def r_line():
-    read_path = ''
-    while True:
-        print(ui.RLINE_GET_PATH)
-        read_path = input()
-        if read_path:
-            if read_path == "Q":
-                return
-            else:
-                break
-    read_file(read_path)
 
 def o_line():
     o_input = input(ui.OLINE_GET_PATH)
@@ -217,6 +171,12 @@ def p_line(path):
     
     print_data(p_inputs, path)
     
+
+def enter_admin_mode():
+    ui.ENTER_A_COMMAND = ""
+    ui.ENTER_USERNAME = ""
+    ui.ENTER_BIO = ""
+    ui.ENTER_PASSWORD = ""
 
 
 def create_file(input_list, admin_bool):
@@ -295,7 +255,6 @@ def read_file(input_path):
         f.close()
     except Exception as ex:
         print(f"ERROR: {ex}")
-    print()
 
 
 def open_file(input_path):
@@ -408,6 +367,5 @@ def print_data(input_list, input_path):
         print(f"ERROR: {ex}")
 
 
-    
 if __name__ == "__main__":
     main()
