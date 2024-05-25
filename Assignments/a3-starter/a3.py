@@ -31,11 +31,6 @@ def main_loop(username = '', password = '', address = '', port = 0, loaded_path 
         else:
             print(f"No profile currently loaded")
 
-        if address == '':
-            print(f"No server currently joined")
-        else:
-            print(f"Joined server {address} at port {port}")
-
         print()
         print(ui.ENTER_A_COMMAND)
         user_command = input()
@@ -43,15 +38,19 @@ def main_loop(username = '', password = '', address = '', port = 0, loaded_path 
         if loaded_path:
             loaded_profile = Profile.Profile()
             loaded_profile.load_profile(loaded_path)
+            address = loaded_profile.dsuserver
             username = loaded_profile.username
             password = loaded_profile.password
             bio = loaded_profile.bio
-
-        if user_command == "J": # user tries to join server
-            print(ui.ENTER_ADDRESS)
-            address = input()
-            port = _get_port()
+            port = 3021
             
+        if user_command == "S":
+            if loaded_path:
+                s_line(address, port, loaded_path)
+            else:
+                print(ui.ERROR_LOAD_FILE)
+
+        
         elif user_command == "M": # user tries to make a post
             if loaded_path:
                 # send a message
@@ -124,6 +123,43 @@ def c_line():
         print(ui.Q_RECEIVED)
         return
     return create_file(c_inputs, False)
+
+def s_line(address, port, input_path):
+    profile_to_scan = Profile.Profile()
+    profile_to_scan.load_profile(input_path)
+    
+    print_profile_info(profile_to_scan)
+    ui.s_line_tutorial()
+    s_input = input()
+    profile_posts = profile_to_scan.get_posts()
+    username = profile_to_scan.username
+    password = profile_to_scan.password
+    bio = profile_to_scan.bio
+
+    if s_input == "A":
+        for i in range(len(profile_posts)):
+            ds_client.send(address, port, username, password, profile_posts[i].get_entry())
+        ds_client.send(address, port, username, password, '', bio)
+    elif s_input == "B":
+        if bio:
+            ds_client.send(address, port, username, password, '', bio)
+        else:
+            print(ui.ERROR_NO_BIO)
+    elif s_input == "P":
+        for i in range(len(profile_posts)):
+            ds_client.send(address, port, username, password, profile_posts[i].get_entry())
+    elif s_input == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    else:
+        try:
+            post_id = int(s_input)
+            ds_client.send(address, port, username, password, profile_posts[post_id].get_entry())
+        except ValueError:
+            print(ui.ERROR_INDEX_OVER)
+        except:
+            print(ui.UNKNOWN_COMMAND)
+
 
 def b_line(address, port, username, password):
     print(ui.ENTER_BIO)
@@ -224,6 +260,7 @@ def create_file(input_list, admin_bool):
         username = ''
         password = ''
         bio = ''
+        dsuserver = ''
         location = input_list[0]
         option = input_list[1]    
         file_name = input_list[2]
@@ -247,7 +284,12 @@ def create_file(input_list, admin_bool):
                 if bio == "Q":
                     print(ui.Q_RECEIVED)
                     return
-            new_profile = Profile.Profile(file_name, username, password)
+                dsuserver = input(ui.ENTER_ADDRESS)
+                if dsuserver == "Q":
+                    print(ui.Q_RECEIVED)
+                    return
+                
+            new_profile = Profile.Profile(dsuserver, username, password)
             new_profile.bio = bio
             f = file_path.open("w")
             f.close
@@ -389,13 +431,7 @@ def print_data(input_list, input_path):
                 except:
                     print(f"ERROR: post with ID {input_list[1]} not found")
             elif command == "-all":
-                print(ui.TITLE_USERNAME, profile_to_scan.username)
-                print(ui.TITLE_PASSWORD, profile_to_scan.password)
-                print(ui.TITLE_BIO, profile_to_scan.bio)
-                print(ui.TITLE_POSTS)
-                profile_posts = profile_to_scan.get_posts()
-                for i in range(len(profile_posts)):
-                    print(f"{i}: {profile_posts[i]["entry"]}")
+                print_profile_info(profile_to_scan)
             else:
                 print(f"ERROR: Command {command} not recognized - stopping prints")
                 break
@@ -407,6 +443,14 @@ def print_data(input_list, input_path):
     except Exception as ex:
         print(f"ERROR: {ex}")
 
+def print_profile_info(profile: Profile.Profile):
+    print(ui.TITLE_USERNAME, profile.username)
+    print(ui.TITLE_PASSWORD, profile.password)
+    print(ui.TITLE_BIO, profile.bio)
+    print(ui.TITLE_POSTS)
+    profile_posts = profile.get_posts()
+    for i in range(len(profile_posts)):
+        print(f"{i}: {profile_posts[i]["entry"]}")
 
     
 if __name__ == "__main__":

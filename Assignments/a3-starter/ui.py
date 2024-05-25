@@ -15,7 +15,6 @@ ENTER_PASSWORD = "Enter your password: "
 ENTER_POST_MESSAGE = "Enter the post you'd like to make: "
 ENTER_BIO = "Enter a bio: "
 
-
 SUCCESS_JOIN = "Username and password accepted!"
 
 MUST_JOIN = "Sorry, please join a server first!"
@@ -37,6 +36,9 @@ ERROR_E_GUIDE = "ERROR: To edit a profile, use format \"E <option> <additional a
 ERROR_P_GUIDE = "ERROR: To print data from a profile, use format \"P <option> <additional arguments>\""
 ERROR_P_POSTID_GUIDE = "ERROR: Try format \"P -post <post ID>\""
 ERROR_NOT_DSU = "ERROR: Not a DSU file"
+ERROR_INDEX_OVER = "ERROR: Listed index out of range"
+ERROR_NO_BIO = "ERROR: Bio is all whitespace or does not exist"
+
 
 TITLE_USERNAME = "Username:"
 TITLE_PASSWORD = "Password:"
@@ -65,10 +67,10 @@ Q_RECEIVED = "\"Q\" command received, quitting action..."
 PLINE_GET_OPTION = "Okay, enter an option to print, or enter \"-h\" to get a list of options: "
 PLINE_GET_POST_ID = "Okay, enter the ID of the post you'd like to view: "
 
+SERVER_MSG = "Message from server: "
+
 def list_commands():
-    print("J: Join a server")
-    print("M: Make a post")
-    print("B: Make a bio")
+    print("S: Send a post or bio to a server")
     print("C: Create a file")
     print("O: Open a file")
     print("D: Delete a file")
@@ -78,6 +80,12 @@ def list_commands():
     print("H: Get a list of commands")
     print("Q: Quit program")
 
+def s_line_tutorial():
+    print("Enter the command of what you'd like to send to the server, or the number ID of the post you'd like to upload:")
+    print("A: Send all posts and bio to server")
+    print("B: Send bio to server")
+    print("P: Send all posts to server")
+    print("Q: Quit and return to the main menu")
 
 def list_e_options():
     print("Enter \"-usr\" to edit the profile's username.")

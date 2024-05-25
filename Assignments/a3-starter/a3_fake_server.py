@@ -7,7 +7,7 @@ def start_server(host_address, host_port):
         srv.bind((host_address, host_port))
         srv.listen()
 
-        print(f"fake a3 server listening on port {host_port}")
+        print(f"fake a3 server listening on ip address {host_address} port {host_port}")
         connection, address = srv.accept()
 
         with connection:
@@ -36,4 +36,5 @@ def start_server(host_address, host_port):
 if __name__ == "__main__":
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
-    start_server("127.0.0.1", 2020)
+    
+    start_server(ip_address, 2020)

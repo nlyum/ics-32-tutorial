@@ -7,12 +7,16 @@ def start_client(server_address, server_port):
         recv = client.makefile("r")
         
         print(f"fake client connected to {server_address} on {server_port}")
-        msg = input("enter message to send: ")
-        send.write(msg + "\r\n")
-        send.flush()
+        
+        while True:
+            msg = input("enter message to send: ")
+            send.write(msg + "\r\n")
+            send.flush()
 
-        srv_msg = recv.readline()[:-1]
-        print(f"response from server: {srv_msg}")
+            srv_msg = recv.readline()[:-1]
+            print(f"response from server: {srv_msg}")
 
 if __name__ == "__main__":
-    start_client("127.0.0.1", 2020)
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    start_client(ip_address, 2020)
