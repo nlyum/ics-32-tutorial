@@ -11,9 +11,12 @@ import ui
 from pathlib import Path
 from shlex import split
 import Profile
+import pycodestyle
+
 
 def main():
     main_loop()
+
 
 def _get_port(): # get in a loop until the user inputs a port number
     try:
@@ -23,6 +26,7 @@ def _get_port(): # get in a loop until the user inputs a port number
     except ValueError:
         print(ui.MUST_PORT_NUM)
         return _get_port()
+
 
 def main_loop(username = '', password = '', address = '', port = 0, loaded_path = ''):
     while True:
@@ -108,9 +112,11 @@ def split_input(input_string):
     input_string = input_string.replace('\\', '/')
     return split(input_string)
 
+
 def organize_elem(input_string):
     input_string = input_string.replace('\\', '/')
     return split(input_string)[0]
+
 
 def c_line():
     c_inputs = ['', '-n', '']
@@ -123,6 +129,7 @@ def c_line():
         print(ui.Q_RECEIVED)
         return
     return create_file(c_inputs, False)
+
 
 def s_line(address, port, input_path):
     profile_to_scan = Profile.Profile()
@@ -166,10 +173,12 @@ def b_line(address, port, username, password):
     bio = input()
     ds_client.send(address, port, username, password, '', bio)
 
+
 def m_line(address, port, username, password):
     print(ui.ENTER_POST_MESSAGE)
     post_message = input()
     ds_client.send(address, port, username, password, post_message)
+
 
 def d_line():
     delete_path = ''
@@ -196,12 +205,14 @@ def r_line():
                 break
     read_file(read_path)
 
+
 def o_line():
     o_input = input(ui.OLINE_GET_PATH)
     if o_input == "Q":
         print(ui.Q_RECEIVED)
         return
     return open_file(o_input)
+
 
 def e_line(path):
     e_inputs = []
@@ -253,7 +264,6 @@ def p_line(path):
     
     print_data(p_inputs, path)
     
-
 
 def create_file(input_list, admin_bool):
     try:
@@ -442,6 +452,7 @@ def print_data(input_list, input_path):
         profile_to_scan.save_profile(input_path)
     except Exception as ex:
         print(f"ERROR: {ex}")
+
 
 def print_profile_info(profile: Profile.Profile):
     print(ui.TITLE_USERNAME, profile.username)
