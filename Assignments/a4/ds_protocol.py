@@ -1,9 +1,5 @@
 # ds_protocol.py
 
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
-
-# Replace the following placeholders with your information.
-
 # NAME: Nathan Lyum
 # EMAIL: nlyum@uci.edu
 # STUDENT ID: 63833693

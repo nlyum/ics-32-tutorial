@@ -1,6 +1,4 @@
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
-
-# Replace the following placeholders with your information.
+# ds_client.py
 
 # NAME: Nathan Lyum
 # EMAIL: nlyum@uci.edu
@@ -98,3 +96,14 @@ def post_json(token, msg):
 
 def bio_json(token, bio):
   return '{"token":"' + token + '", "bio": {"entry": "' + bio + '","timestamp": "' + str(time.time()) + '"}}'
+
+def dm_msg_json(token, msg, recipient):
+  return '{"token":"' + token + '", "directmessage":{"entry":"' + msg + '", "recipient": "' + recipient + '", "timestamp": "' + str(time.time()) + '"}}'
+
+def dms_unread_json(token):
+  return '{"token":"' + token + '", "directmessage":"new"}'
+
+def dms_all_json(token):
+  return '{"token":"' + token + '", "directmessage":"all"}'
+
+
