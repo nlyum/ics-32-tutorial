@@ -1,102 +1,122 @@
-# Nathan Lyum
-# nlyum@uci.edu
-# 63833693
+# NAME: Nathan Lyum
+# EMAIL: nlyum@uci.edu
+# STUDENT ID: 63833693
 
-# a2.py
+# a4.py
+
+import ds_client
+import ds_protocol
+import ui
 
 from pathlib import Path
 from shlex import split
 import Profile
-import ui
+import pycodestyle
+
 
 def main():
+    main_loop()
+
+
+def _get_port(): # get in a loop until the user inputs a port number
     try:
-        input_string = input(ui.WELCOME_ENTER_COMMAND)
-        print()
-        user_inputs = split_input(input_string)
-        loaded_path = None
-        admin_bool = False
-    except Exception as ex:
-        print(f"ERROR: {ex}")
-        main()
+        print(ui.ENTER_PORT)
+        port = int(input())
+        return port
+    except ValueError:
+        print(ui.MUST_PORT_NUM)
+        return _get_port()
 
+
+def main_loop(username = '', password = '', address = '', port = 0, loaded_path = ''):
     while True:
-        try:
-            user_command = user_inputs[0]
-            user_args = len(user_inputs) - 1
+        if loaded_path:
+            print(f"Current profile path loaded: {loaded_path}")
+        else:
+            print(f"No profile currently loaded")
 
-            if user_command == 'C':
-                if user_args == 3:
-                    loaded_path = create_file(user_inputs[1:], admin_bool)
-                else:
-                    loaded_path = c_line()
+        print()
+        print(ui.ENTER_A_COMMAND)
+        user_command = input()
+        
+        if loaded_path:
+            loaded_profile = Profile.Profile()
+            loaded_profile.load_profile(loaded_path)
+            address = loaded_profile.dsuserver
+            username = loaded_profile.username
+            password = loaded_profile.password
+            bio = loaded_profile.bio
+            port = 3021
             
-            elif user_command == 'D':
-                if user_args == 1:
-                    del_file(user_inputs[1])
-                else:
-                    print(ui.ERROR_D_GUIDE)
-            
-            elif user_command == 'R':
-                if user_args == 1:
-                    read_file(user_inputs[1])
-                else:
-                    print(ui.ERROR_R_GUIDE)
-            
-            elif user_command == 'O':
-                if user_args == 1:
-                    loaded_path = open_file(user_inputs[1])
-                else:
-                    loaded_path = o_line()
-            
-            elif user_command == 'E':
-                if loaded_path:
-                    if user_args > 1:
-                        edit_file(user_inputs[1:], loaded_path)
-                    else:
-                        e_line(loaded_path)
-                else:
-                    print(ui.ERROR_LOAD_FILE)
-            
-            elif user_command == 'P':
-                if loaded_path:
-                    if user_args > 0:
-                        print_data(user_inputs[1:], loaded_path)
-                    else:
-                        p_line(loaded_path)
-                else:
-                    print(ui.ERROR_LOAD_FILE)
-                
-            
-            elif user_command == 'admin':
-                enter_admin_mode()
-                admin_bool = True
-            elif user_command == 'Q':
-                break
-            else:
-                print(ui.ERROR_UNKNOWN_COMMAND)
-            
-            print()
+        if user_command == "S":
             if loaded_path:
-                print(f"Current profile path loaded: {loaded_path}")
-                input_string = input(ui.ENTER_A_COMMAND)
+                s_line(address, port, loaded_path)
             else:
-                print(f"No profile currently loaded")
-                input_string = input(ui.WELCOME_ENTER_COMMAND)
+                print(ui.ERROR_LOAD_FILE)
 
-            print()
-            input_string = input_string.replace('\\', '/')
-            user_inputs = split(input_string)
-        except Exception as ex:
-            print(f"ERROR: {ex}")
+        
+        elif user_command == "M": # user tries to make a post
+            if loaded_path:
+                # send a message
+                m_line(address, port, username, password)
+            else:
+                print(ui.ERROR_LOAD_FILE) # if the user hasn't opened a file yet, do that
+                
+
+        elif user_command == "B": # user tries to add/change a bio
+            if loaded_path:
+                # make a bio
+                b_line(address, port, username, password)
+            else:
+                print(ui.ERROR_LOAD_FILE) # if the user hasn't opened a file yet, do that
+        
+        elif user_command == 'C':
+            loaded_path = c_line()
+        
+        elif user_command == 'D':
+            d_line()
+        
+        elif user_command == 'R':
+            r_line()
+
+        elif user_command == 'O':
+            loaded_path = o_line()
+        
+        elif user_command == 'E':
+            if loaded_path:
+                e_line(loaded_path)
+            else:
+                print(ui.ERROR_LOAD_FILE)
+        
+        elif user_command == 'P':
+            if loaded_path:
+                p_line(loaded_path)
+            else:
+                print(ui.ERROR_LOAD_FILE)
+
+        elif user_command == 'H':
+            ui.list_commands()
+        
+        elif user_command == 'Q':
+            break
+        else:
+            print(ui.ERROR_UNKNOWN_COMMAND)
+            
+        print()
+        
+
+
+
     
 def split_input(input_string):
     input_string = input_string.replace('\\', '/')
     return split(input_string)
 
+
 def organize_elem(input_string):
     input_string = input_string.replace('\\', '/')
     return split(input_string)[0]
+
 
 def c_line():
     c_inputs = ['', '-n', '']
@@ -110,12 +130,89 @@ def c_line():
         return
     return create_file(c_inputs, False)
 
+
+def s_line(address, port, input_path):
+    profile_to_scan = Profile.Profile()
+    profile_to_scan.load_profile(input_path)
+    
+    print_profile_info(profile_to_scan)
+    ui.s_line_tutorial()
+    s_input = input()
+    profile_posts = profile_to_scan.get_posts()
+    username = profile_to_scan.username
+    password = profile_to_scan.password
+    bio = profile_to_scan.bio
+
+    if s_input == "A":
+        for i in range(len(profile_posts)):
+            ds_client.send(address, port, username, password, profile_posts[i].get_entry())
+        ds_client.send(address, port, username, password, '', bio)
+    elif s_input == "B":
+        if bio:
+            ds_client.send(address, port, username, password, '', bio)
+        else:
+            print(ui.ERROR_NO_BIO)
+    elif s_input == "P":
+        for i in range(len(profile_posts)):
+            ds_client.send(address, port, username, password, profile_posts[i].get_entry())
+    elif s_input == "Q":
+        print(ui.Q_RECEIVED)
+        return
+    else:
+        try:
+            post_id = int(s_input)
+            ds_client.send(address, port, username, password, profile_posts[post_id].get_entry())
+        except ValueError:
+            print(ui.ERROR_INDEX_OVER)
+        except:
+            print(ui.UNKNOWN_COMMAND)
+
+
+def b_line(address, port, username, password):
+    print(ui.ENTER_BIO)
+    bio = input()
+    ds_client.send(address, port, username, password, '', bio)
+
+
+def m_line(address, port, username, password):
+    print(ui.ENTER_POST_MESSAGE)
+    post_message = input()
+    ds_client.send(address, port, username, password, post_message)
+
+
+def d_line():
+    delete_path = ''
+    while True:
+        print(ui.DLINE_GET_PATH)
+        delete_path = input()
+        if delete_path:
+            if delete_path == "Q":
+                return
+            else:
+                break
+    del_file(delete_path)
+
+
+def r_line():
+    read_path = ''
+    while True:
+        print(ui.RLINE_GET_PATH)
+        read_path = input()
+        if read_path:
+            if read_path == "Q":
+                return
+            else:
+                break
+    read_file(read_path)
+
+
 def o_line():
     o_input = input(ui.OLINE_GET_PATH)
     if o_input == "Q":
         print(ui.Q_RECEIVED)
         return
     return open_file(o_input)
+
 
 def e_line(path):
     e_inputs = []
@@ -168,18 +265,12 @@ def p_line(path):
     print_data(p_inputs, path)
     
 
-def enter_admin_mode():
-    ui.ENTER_A_COMMAND = ""
-    ui.ENTER_USERNAME = ""
-    ui.ENTER_BIO = ""
-    ui.ENTER_PASSWORD = ""
-
-
 def create_file(input_list, admin_bool):
     try:
         username = ''
         password = ''
         bio = ''
+        dsuserver = ''
         location = input_list[0]
         option = input_list[1]    
         file_name = input_list[2]
@@ -203,7 +294,12 @@ def create_file(input_list, admin_bool):
                 if bio == "Q":
                     print(ui.Q_RECEIVED)
                     return
-            new_profile = Profile.Profile(file_name, username, password)
+                dsuserver = input(ui.ENTER_ADDRESS)
+                if dsuserver == "Q":
+                    print(ui.Q_RECEIVED)
+                    return
+                
+            new_profile = Profile.Profile(dsuserver, username, password)
             new_profile.bio = bio
             f = file_path.open("w")
             f.close
@@ -251,6 +347,7 @@ def read_file(input_path):
         f.close()
     except Exception as ex:
         print(f"ERROR: {ex}")
+    print()
 
 
 def open_file(input_path):
@@ -330,7 +427,7 @@ def print_data(input_list, input_path):
                 print(ui.TITLE_POSTS)
                 profile_posts = profile_to_scan.get_posts()
                 for i in range(len(profile_posts)):
-                    print(f"{i}: {profile_posts[i]['entry']}")
+                    print(f"{i}: {profile_posts[i]["entry"]}")
             elif command == "-post":
                 try:
                     if len(input_list) > 1:
@@ -344,13 +441,7 @@ def print_data(input_list, input_path):
                 except:
                     print(f"ERROR: post with ID {input_list[1]} not found")
             elif command == "-all":
-                print(ui.TITLE_USERNAME, profile_to_scan.username)
-                print(ui.TITLE_PASSWORD, profile_to_scan.password)
-                print(ui.TITLE_BIO, profile_to_scan.bio)
-                print(ui.TITLE_POSTS)
-                profile_posts = profile_to_scan.get_posts()
-                for i in range(len(profile_posts)):
-                    print(f"{i}: {profile_posts[i]['entry']}")
+                print_profile_info(profile_to_scan)
             else:
                 print(f"ERROR: Command {command} not recognized - stopping prints")
                 break
@@ -363,5 +454,15 @@ def print_data(input_list, input_path):
         print(f"ERROR: {ex}")
 
 
+def print_profile_info(profile: Profile.Profile):
+    print(ui.TITLE_USERNAME, profile.username)
+    print(ui.TITLE_PASSWORD, profile.password)
+    print(ui.TITLE_BIO, profile.bio)
+    print(ui.TITLE_POSTS)
+    profile_posts = profile.get_posts()
+    for i in range(len(profile_posts)):
+        print(f"{i}: {profile_posts[i]["entry"]}")
+
+    
 if __name__ == "__main__":
     main()
