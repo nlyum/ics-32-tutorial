@@ -14,8 +14,6 @@ DataTuple = namedtuple('DataTuple', ['type', 'message', 'token'])
 def extract_json(json_msg:str) -> DataTuple:
   '''
   Call the json.loads function on a json string and convert it to a DataTuple object
-  
-  DONE: replace the pseudo placeholder keys with actual DSP protocol keys
   '''
   try:
     json_obj = json.loads(json_msg)
@@ -32,3 +30,13 @@ def extract_json(json_msg:str) -> DataTuple:
     print("Json cannot be decoded.")
 
   return DataTuple(type, message, token)
+
+def json_to_dict(json_msg:str) -> dict:
+  '''
+  Calls the json.loads function on a json.string and converts it to a dictionary
+  '''
+  
+  json_obj = json.loads(json_msg)
+  json_dict = dict(json_obj)
+  
+  return json_dict
